@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.b,
             R.drawable.c,
             R.drawable.d,
+            R.drawable.e,
             // Add your image resources here
     };
     private Techniques[] animations = {
@@ -143,7 +144,7 @@ private void setupWindow() {
     // Set maximum brightness
     try {
         Settings.System.putInt(getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS, 255);
+                Settings.System.SCREEN_BRIGHTNESS, 204);
     } catch (Exception e) {
         e.printStackTrace();
     }
