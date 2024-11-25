@@ -37,38 +37,12 @@ public class MainActivity extends AppCompatActivity {
     };
     private Techniques[] animations = {
             // Current animations
-            Techniques.FlipInX,
-            Techniques.FlipInY,
             Techniques.FadeIn,
-            Techniques.RotateIn,
             Techniques.ZoomIn,
             Techniques.SlideInLeft,
             Techniques.SlideInRight,
-            Techniques.RollIn,
-            Techniques.BounceIn,
-            Techniques.Landing,
-
-            // Additional awesome animations
-            Techniques.Pulse,
-            Techniques.RubberBand,
-            Techniques.Shake,
-            Techniques.Swing,
-            Techniques.Wobble,
-            Techniques.Bounce,
-            Techniques.Flash,
-            Techniques.StandUp,
-            Techniques.Wave,
-            Techniques.TakingOff,
-            Techniques.DropOut,
-            Techniques.Hinge,
-            Techniques.ZoomInDown,
-            Techniques.ZoomInLeft,
-            Techniques.ZoomInRight,
-            Techniques.ZoomInUp,
-            Techniques.RotateInDownLeft,
-            Techniques.RotateInDownRight,
-            Techniques.RotateInUpLeft,
-            Techniques.RotateInUpRight
+            Techniques.SlideInUp,
+            Techniques.SlideInDown
     };
 
     private int currentImageIndex = 0;
@@ -195,7 +169,7 @@ private void setupWindow() {
             public void run() {
                 animateImage();
                 currentImageIndex = (currentImageIndex + 1) % imageResources.length;
-                handler.postDelayed(this, 3000);
+                handler.postDelayed(this, 4000);
             }
         };
         handler.post(animationRunnable);
@@ -205,7 +179,7 @@ private void setupWindow() {
         imageView.setImageResource(imageResources[currentImageIndex]);
         Techniques randomAnimation = animations[random.nextInt(animations.length)];
         YoYo.with(randomAnimation)
-                .duration(1000)
+                .duration(2000)
                 .playOn(imageView);
     }
 
