@@ -1,5 +1,8 @@
 package com.sabbir.atsexpo.waltonmobile;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -8,11 +11,13 @@ import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,13 +37,11 @@ public class MainActivity extends AppCompatActivity {
             R.drawable.b,
             R.drawable.c,
             R.drawable.d,
-            R.drawable.e,
+            //R.drawable.e,
             // Add your image resources here
     };
     private Techniques[] animations = {
             // Current animations
-            Techniques.FadeIn,
-            Techniques.ZoomIn,
             Techniques.SlideInLeft,
             Techniques.SlideInRight,
             Techniques.SlideInUp,
@@ -163,25 +166,137 @@ private void setupWindow() {
         );
     }
 
-    private void startImageTransition() {
+    /*private void startImageTransition() {
+        // Initialize first image
+        imageView.setImageResource(imageResources[0]);
+
         animationRunnable = new Runnable() {
             @Override
             public void run() {
-                animateImage();
-                currentImageIndex = (currentImageIndex + 1) % imageResources.length;
+                int nextImageIndex = (currentImageIndex + 1) % imageResources.length;
+
+                // Create next image view with proper configuration
+                ImageView nextImageView = new ImageView(MainActivity.this);
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
+                nextImageView.setLayoutParams(params);
+                nextImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                nextImageView.setImageResource(imageResources[nextImageIndex]);
+
+                // Position the next image off-screen to the right
+                nextImageView.setTranslationX(imageView.getWidth());
+
+                // Add to layout
+                RelativeLayout rootLayout = (RelativeLayout) imageView.getParent();
+                rootLayout.addView(nextImageView);
+
+                // Animate both views simultaneously
+                nextImageView.animate()
+                        .translationX(0)
+                        .setDuration(1000)
+                        .setInterpolator(new AccelerateDecelerateInterpolator());
+
+                imageView.animate()
+                        .translationX(-imageView.getWidth())
+                        .setDuration(1000)
+                        .setInterpolator(new AccelerateDecelerateInterpolator())
+                        .withEndAction(() -> {
+                            // Update current image and reset position
+                            imageView.setTranslationX(0);
+                            imageView.setImageResource(imageResources[nextImageIndex]);
+                            rootLayout.removeView(nextImageView);
+                            currentImageIndex = nextImageIndex;
+                        });
+
+                handler.postDelayed(this, 4000);
+            }
+        };
+        handler.post(animationRunnable);
+    }
+*/
+
+    private void startImageTransition() {
+        // Initialize the first image
+        imageView.setImageResource(imageResources[0]);
+
+        animationRunnable = new Runnable() {
+            @Override
+            public void run() {
+                int nextImageIndex = (currentImageIndex + 1) % imageResources.length;
+
+                // Create the next image view
+                ImageView nextImageView = new ImageView(MainActivity.this);
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+                        RelativeLayout.LayoutParams.MATCH_PARENT,
+                        RelativeLayout.LayoutParams.MATCH_PARENT);
+                nextImageView.setLayoutParams(params);
+                nextImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                nextImageView.setImageResource(imageResources[nextImageIndex]);
+
+                // Add to layout
+                RelativeLayout rootLayout = (RelativeLayout) imageView.getParent();
+                rootLayout.addView(nextImageView);
+
+                // Determine slide direction
+                int direction = random.nextInt(4); // 0 = up, 1 = down, 2 = left, 3 = right
+                float nextImageStartX = 0, nextImageStartY = 0, currentImageEndX = 0, currentImageEndY = 0;
+
+                switch (direction) {
+                    case 0: // Slide Up
+                        nextImageStartY = rootLayout.getHeight(); // Start below
+                        currentImageEndY = -rootLayout.getHeight(); // Slide current up
+                        break;
+                    case 1: // Slide Down
+                        nextImageStartY = -rootLayout.getHeight(); // Start above
+                        currentImageEndY = rootLayout.getHeight(); // Slide current down
+                        break;
+                    case 2: // Slide Left
+                        nextImageStartX = rootLayout.getWidth(); // Start on the right
+                        currentImageEndX = -rootLayout.getWidth(); // Slide current left
+                        break;
+                    case 3: // Slide Right
+                        nextImageStartX = -rootLayout.getWidth(); // Start on the left
+                        currentImageEndX = rootLayout.getWidth(); // Slide current right
+                        break;
+                }
+
+                // Position the next image initially
+                nextImageView.setTranslationX(nextImageStartX);
+                nextImageView.setTranslationY(nextImageStartY);
+
+                // Animators for next and current images
+                ObjectAnimator nextImageSlideX = ObjectAnimator.ofFloat(nextImageView, "translationX", 0);
+                ObjectAnimator nextImageSlideY = ObjectAnimator.ofFloat(nextImageView, "translationY", 0);
+                ObjectAnimator currentImageSlideX = ObjectAnimator.ofFloat(imageView, "translationX", currentImageEndX);
+                ObjectAnimator currentImageSlideY = ObjectAnimator.ofFloat(imageView, "translationY", currentImageEndY);
+
+                AnimatorSet animatorSet = new AnimatorSet();
+                animatorSet.playTogether(nextImageSlideX, nextImageSlideY, currentImageSlideX, currentImageSlideY);
+                animatorSet.setDuration(1000); // Animation duration
+                animatorSet.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        // Update current image and reset position
+                        imageView.setImageResource(imageResources[nextImageIndex]);
+                        imageView.setTranslationX(0);
+                        imageView.setTranslationY(0);
+                        rootLayout.removeView(nextImageView);
+                        currentImageIndex = nextImageIndex;
+                    }
+                });
+                animatorSet.start();
+
+                // Schedule the next transition
                 handler.postDelayed(this, 4000);
             }
         };
         handler.post(animationRunnable);
     }
 
-    private void animateImage() {
-        imageView.setImageResource(imageResources[currentImageIndex]);
-        Techniques randomAnimation = animations[random.nextInt(animations.length)];
-        YoYo.with(randomAnimation)
-                .duration(2000)
-                .playOn(imageView);
-    }
+
+
+
 
     @Override
     protected void onResume() {
